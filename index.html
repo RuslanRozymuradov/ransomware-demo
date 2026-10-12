@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sistem Yöneticisi</title>
+    <style>
+        /* Genel Ayarlar ve CRT Efekti */
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%; background-color: black;
+            overflow: hidden; font-family: 'Courier New', Courier, monospace;
+        }
+        
+        /* Arka Plan Matrix Canvas'ı */
+        #matrixCanvas {
+            position: absolute; top: 0; left: 0; z-index: 1; width: 100%; height: 100%;
+        }
+
+        /* Odak Noktası: Terminal Penceresi */
+        .terminal-container {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 90%; max-width: 600px; z-index: 10;
+            background: rgba(0, 0, 0, 0.85); /* Arka planı hafif gösteren koyu cam efekti */
+            border: 1px solid #0f0; box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            border-radius: 5px; padding: 20px; box-sizing: border-box;
+            backdrop-filter: blur(3px);
+        }
+
+        /* Terminal Yazıları */
+        #terminal-text {
+            color: #0f0; font-size: 16px; line-height: 1.5;
+            text-shadow: 0 0 5px #0f0; min-height: 250px;
+        }
+
+        /* Kırmızı Uyarı Modu (Şifreleme bittiğinde devreye girer) */
+        .red-alert { color: #ff3333 !important; text-shadow: 0 0 5px #ff3333 !important; border-color: #ff3333 !important; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4) !important;}
+        .red-text { color: #ff3333 !important; text-shadow: 0 0 5px #ff3333 !important;}
+        
+        /* Yeşil Farkındalık Modu */
+        .safe-mode { color: #00ffcc !important; text-shadow: 0 0 5px #00ffcc !important; border-color: #00ffcc !important; box-shadow: 0 0 20px rgba(0, 255, 204, 0.4) !important;}
+
+        /* Yanıp Sönen İmleç */
+        .cursor { display: inline-block; width: 10px; height: 18px; background-color: #0f0; animation: blink 1s step-end infinite; vertical-align: bottom;}
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Eski Monitör Tarama Çizgileri */
+        .scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 50; pointer-events: none;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+        }
+
+        /* Mobil Optimizasyon */
+        @media (max-width: 600px) { #terminal-text { font-size: 14px; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrixCanvas"></canvas>
+    <div class="scanlines"></div>
+
+    <div class="terminal-container" id="terminal-box">
+        <div id="terminal-text"></div>
+        <span class="cursor" id="cursor"></span>
+    </div>
+
+    <script>
+        // --- 1. MATRIX ARKA PLAN ANİMASYONU ---
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+{}[]|;:<>?'.split('');
+        const fontSize = 14;
+        const columns = Math.floor(canvas.width / fontSize) + 1;
+        const drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = 1;
+
+        let matrixColor = '#0F0'; // Başlangıçta yeşil
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; // Arkada iz bırakma ayarı
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = matrixColor;
+            ctx.font = fontSize + 'px monospace';
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+            requestAnimationFrame(drawMatrix);
+        }
+        requestAnimationFrame(drawMatrix);
+
+        // --- 2. TERMİNAL YAZI ANİMASYONU ---
+        const terminal = document.getElementById('terminal-text');
+        const terminalBox = document.getElementById('terminal-box');
+        const cursor = document.getElementById('cursor');
+
+        // Bekleme fonksiyonu (Gerçekçi gecikmeler için)
+        const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+        // Daktilo efekti fonksiyonu (Yavaş ve odaklanılabilir yazım)
+        async function typeLine(text, speed = 30, style = "", replaceMode = false) {
+            const line = document.createElement('div');
+            if(style) line.className = style;
+            
+            if (!replaceMode) {
+                terminal.appendChild(line);
+            } else {
+                // Aynı satıra devam etmek için (örn: [OK] yazdırmak)
+                terminal.lastChild.appendChild(document.createTextNode(" "));
+            }
+
+            const target = replaceMode ? terminal.lastChild : line;
+
+            for (let i = 0; i < text.length; i++) {
+                target.innerHTML += text.charAt(i);
+                await sleep(speed);
+                // Otomatik aşağı kaydırma
+                terminalBox.scrollTop = terminalBox.scrollHeight;
+            }
+        }
+
+        // Ana Simülasyon Senaryosu
+        async function runSimulation() {
+            await sleep(1000);
+            
+            // 1. Sızma Aşaması
+            await typeLine("root@system:~# ./payload_exec.sh", 50);
+            await sleep(800);
+            await typeLine("[*] Hedef cihaz mimarisi taranıyor...", 30);
+            await sleep(1000);
+            await typeLine("[*] Güvenlik duvarı atlatıldı.", 20, "", true);
+            await sleep(800);
+            await typeLine("[!] AES-256 Şifreleme Modülü Başlatılıyor...", 40);
+            await sleep(1500);
+
+            // 2. Şifreleme Aşaması (Yavaş ve stres verici)
+            const files = [
+                "/storage/DCIM/Camera/IMG_2023.jpg",
+                "/storage/WhatsApp/Databases/msg.db",
+                "/data/com.android.providers.contacts/contacts.db",
+                "/storage/Pictures/Screenshots/sifreler.txt"
+            ];
+
+            terminal.innerHTML += "<br>"; // Boşluk
+            for (let file of files) {
+                await typeLine(`Şifreleniyor: ${file}`, 20);
+                await sleep(600); // Kullanıcı burayı okusun diye bekleme
+                await typeLine(" -> [KİLİTLENDİ]", 10, "red-text", true);
+                await sleep(800);
+            }
+
+            // 3. Ransomware Şok Aşaması
+            await sleep(1000);
+            terminal.innerHTML = ""; // Ekranı temizle
+            terminalBox.classList.add("red-alert");
+            matrixColor = '#ff0000'; // Matrix kırmızıya döner
+            cursor.style.backgroundColor = '#ff0000';
+
+            await typeLine("!!! DİKKAT: CİHAZINIZ ELE GEÇİRİLDİ !!!", 50, "red-text");
+            await sleep(1000);
+            await typeLine("> Tüm kişisel fotoğraflarınız, mesajlarınız ve rehberiniz", 40, "red-text");
+            await typeLine("> askeri düzeyde şifreleme ile kilitlenmiştir.", 40, "red-text");
+            await sleep(1000);
+            await typeLine("> Cihazınızı kapatmayı denemeyin, veriler kalıcı olarak silinir.", 40, "red-text");
+            await sleep(3000); // Kullanıcının panik yaşaması için uzun bekleme
+
+            // 4. Farkındalık (Reveal) Aşaması
+            terminal.innerHTML = ""; // Ekranı temizle
+            terminalBox.classList.remove("red-alert");
+            terminalBox.classList.add("safe-mode");
+            matrixColor = '#005511'; // Matrix koyu ve sakin bir yeşile döner
+            cursor.style.backgroundColor = '#00ffcc';
+
+            await typeLine("==========================================", 10, "safe-mode");
+            await typeLine("   SİMÜLASYON TAMAMLANDI - GÜVENDESİNİZ   ", 40, "safe-mode");
+            await typeLine("==========================================", 10, "safe-mode");
+            await sleep(1000);
+            await typeLine("> Bu sayfa, siber güvenlik kulübümüz tarafından", 40, "safe-mode");
+            await typeLine("> Ransomware (Fidye Yazılımı) farkındalığı", 40, "safe-mode");
+            await typeLine("> yaratmak için hazırlanmıştır.", 40, "safe-mode");
+            terminal.innerHTML += "<br>";
+            await sleep(1000);
+            await typeLine("[!] Alınacak Ders:", 50, "safe-mode");
+            await typeLine("Kaynağını bilmediğiniz, sokakta veya afişlerde", 40, "safe-mode");
+            await typeLine("gördüğünüz rastgele QR kodlarını ASLA okutmayın.", 40, "safe-mode");
+            await sleep(500);
+            await typeLine("Quishing (QR Phishing) kurbanı olabilirsiniz.", 40, "safe-mode");
+            
+            terminal.innerHTML += "<br>";
+            await sleep(1000);
+            await typeLine("Sergi standımıza bekliyoruz :)", 50, "safe-mode");
+        }
+
+        // Sayfa yüklendiğinde başlat
+        window.onload = runSimulation;
+    </script>
+</body>
+</html>
