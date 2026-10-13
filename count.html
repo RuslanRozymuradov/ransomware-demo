@@ -16,20 +16,26 @@
 <body>
     <div class="box">
         <h1>Ransomware QR Tarama Sayısı</h1>
-        <div class="count" id="countDisplay">...</div>
+        <div class="count" id="countDisplay">0</div>
         <button onclick="resetCount()">Sayacı Sıfırla</button>
     </div>
 
     <script>
         const apiUrl = 'https://api.counterapi.dev/v1/siber_sergi_ruslan/ransomware_qr';
-        let globalCount = 0;
         let offset = parseInt(localStorage.getItem('qr_offset')) || 0;
+        let globalCount = 0;
 
         async function loadCount() {
-            let res = await fetch(apiUrl);
-            let data = await res.json();
-            globalCount = data.count || 0;
-            document.getElementById('countDisplay').innerText = Math.max(0, globalCount - offset);
+            try {
+                // cache: 'no-store' ekledik ki her seferinde güncel veriyi çeksin
+                let res = await fetch(apiUrl, { cache: 'no-store' });
+                let data = await res.json();
+                globalCount = data.count || 0;
+                let finalCount = globalCount - offset;
+                document.getElementById('countDisplay').innerText = finalCount > 0 ? finalCount : 0;
+            } catch (err) {
+                console.error("Sayaç yüklenemedi", err);
+            }
         }
 
         function resetCount() {
@@ -38,7 +44,9 @@
             document.getElementById('countDisplay').innerText = 0;
         }
 
+        // Sayfa açılır açılmaz yükle
         loadCount();
+        // Sonra 3 saniyede bir güncelle
         setInterval(loadCount, 3000);
     </script>
 </body>
