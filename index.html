@@ -34,6 +34,8 @@
         <div id="terminal-text"></div>
         <span class="cursor" id="cursor"></span>
     </div>
+    
+    <!-- Ana Animasyon Scripti -->
     <script>
         const canvas = document.getElementById('matrixCanvas');
         const ctx = canvas.getContext('2d');
@@ -140,14 +142,29 @@
             await sleep(1000);
             await typeLine("Sergi standımıza bekliyoruz :)", 50, "safe-mode");
         }
-       
+        
         window.onload = runSimulation;
-        window.onload = function() {
-    runSimulation();
-    // Sayaç isteğini hata yakalama (catch) ile gönder, tarayıcı engellemesin
-    fetch('https://api.counterapi.dev/v1/siber_sergi_ruslan/ransomware_qr/up')
-        .catch(err => console.error("Sayaç hatası:", err));
-};
+    </script>
+
+    <!-- Firebase Sayaç Scripti -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
+            authDomain: "deneme-4f8f3.firebaseapp.com",
+            databaseURL:"https://console.firebase.google.com/project/deneme-4f8f3/database/deneme-4f8f3-default-rtdb/data/~2F", //  
+            projectId: "deneme-4f8f3"
+            storageBucket: "deneme-4f8f3.firebasestorage.app",
+            messagingSenderId: "891754162517",
+            appId: "1:891754162517:web:1794bcb4ab265dc7c7a7dc",
+            measurementId: "G-EBZ5VMT6TD"
+
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        db.ref('qr_counter').set(firebase.database.ServerValue.increment(1));
     </script>
 </body>
 </html>
