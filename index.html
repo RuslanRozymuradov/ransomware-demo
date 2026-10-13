@@ -140,9 +140,14 @@
             await sleep(1000);
             await typeLine("Sergi standımıza bekliyoruz :)", 50, "safe-mode");
         }
-
+       
         window.onload = runSimulation;
-        fetch('https://api.counterapi.dev/v1/siber_sergi_ruslan/ransomware_qr/up');
+        window.onload = function() {
+    runSimulation();
+    // Sayaç isteğini hata yakalama (catch) ile gönder, tarayıcı engellemesin
+    fetch('https://api.counterapi.dev/v1/siber_sergi_ruslan/ransomware_qr/up')
+        .catch(err => console.error("Sayaç hatası:", err));
+};
     </script>
 </body>
 </html>
