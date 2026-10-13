@@ -22,18 +22,25 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        // ELİNDEKİ BİLGİLERİ BURAYA YAPIŞTIR
         const firebaseConfig = {
-            
+            apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
+            authDomain: "deneme-4f8f3.firebaseapp.com",
+            databaseURL: "https://deneme-4f8f3-default-rtdb.firebaseio.com",
+            projectId: "deneme-4f8f3",
+            storageBucket: "deneme-4f8f3.firebasestorage.app",
+            messagingSenderId: "891754162517",
+            appId: "1:891754162517:web:1794bcb4ab265dc7c7a7dc",
+            measurementId: "G-EBZ5VMT6TD"
         };
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
         
+        const db = firebase.database();
         let offset = parseInt(localStorage.getItem('qr_offset')) || 0;
         let globalCount = 0;
 
-        // Firebase'den anlık veri okuma
         db.ref('qr_counter').on('value', (snapshot) => {
             globalCount = snapshot.val() || 0;
             let displayCount = globalCount - offset;
