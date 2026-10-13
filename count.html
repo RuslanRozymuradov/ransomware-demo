@@ -5,49 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canlı Sayaç</title>
     <style>
-        body { background-color: #111; color: #0f0; font-family: 'Courier New', Courier, monospace; text-align: center; padding-top: 10vh; }
+        body { background: #111; color: #0f0; font-family: 'Courier New', Courier, monospace; text-align: center; padding-top: 10vh; }
         .box { border: 1px solid #0f0; display: inline-block; padding: 40px; border-radius: 10px; background: #000; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); }
-        h1 { font-size: 24px; margin: 0 0 15px 0; }
         .count { font-size: 80px; font-weight: bold; margin: 20px 0; color: #fff; text-shadow: 0 0 10px #fff; }
-        button { background-color: #ff3333; color: white; border: none; padding: 12px 25px; font-size: 16px; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        button:hover { background-color: #cc0000; }
+        button { background: #f33; color: white; border: none; padding: 12px 25px; font-size: 16px; cursor: pointer; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="box">
         <h1>Ransomware QR Tarama Sayısı</h1>
-        <div class="count" id="countDisplay">0</div>
+        <div class="count" id="val">0</div>
         <button onclick="resetCount()">Sayacı Sıfırla</button>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <script>
-        const apiUrl = 'https://api.counterapi.dev/v1/siber_sergi_ruslan/ransomware_qr';
+        // ELİNDEKİ BİLGİLERİ BURAYA YAPIŞTIR
+        const firebaseConfig = {
+            
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        
         let offset = parseInt(localStorage.getItem('qr_offset')) || 0;
         let globalCount = 0;
 
-        async function loadCount() {
-            try {
-                // cache: 'no-store' ekledik ki her seferinde güncel veriyi çeksin
-                let res = await fetch(apiUrl, { cache: 'no-store' });
-                let data = await res.json();
-                globalCount = data.count || 0;
-                let finalCount = globalCount - offset;
-                document.getElementById('countDisplay').innerText = finalCount > 0 ? finalCount : 0;
-            } catch (err) {
-                console.error("Sayaç yüklenemedi", err);
-            }
-        }
+        // Firebase'den anlık veri okuma
+        db.ref('qr_counter').on('value', (snapshot) => {
+            globalCount = snapshot.val() || 0;
+            let displayCount = globalCount - offset;
+            document.getElementById('val').innerText = displayCount > 0 ? displayCount : 0;
+        });
 
         function resetCount() {
             offset = globalCount;
             localStorage.setItem('qr_offset', offset);
-            document.getElementById('countDisplay').innerText = 0;
+            document.getElementById('val').innerText = 0;
         }
-
-        // Sayfa açılır açılmaz yükle
-        loadCount();
-        // Sonra 3 saniyede bir güncelle
-        setInterval(loadCount, 3000);
     </script>
 </body>
 </html>
