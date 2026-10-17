@@ -2,14 +2,13 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <!-- Mobil cihazlarda kusursuz görünmesi için Responsive Meta Tag -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Güncellemesi</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.3; }
         
-        /* Başlangıç Ekranı (İzin Koparmak İçin) */
+        /* Başlangıç Ekranı */
         #start-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999; display: flex; flex-direction: column;
@@ -23,7 +22,7 @@
         }
         @keyframes pulse { 0% { box-shadow: 0 0 10px #0f0; } 50% { box-shadow: 0 0 30px #0f0; } 100% { box-shadow: 0 0 10px #0f0; } }
 
-        /* Ana Terminal Kutusu (Responsive) */
+        /* Ana Terminal Kutusu */
         #terminal-box {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 95%; max-width: 600px; height: 85vh; background: rgba(0, 0, 0, 0.85);
@@ -62,11 +61,27 @@
             box-shadow: 0 0 15px rgba(255,0,0,0.8); animation: popupAnim 0.2s ease-out forwards;
         }
         @keyframes popupAnim { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* --- YENİ: SAHTE İŞLETİM SİSTEMİ BİLDİRİMLERİ (IOS/ANDROID STYLE) --- */
+        #notification-area {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 400px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;
+        }
+        .os-notif {
+            background: rgba(245, 245, 245, 0.95); border-radius: 16px; padding: 12px 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #111; animation: dropDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer;
+        }
+        @keyframes dropDown { from { transform: translateY(-80px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes notifShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #555; margin-bottom: 6px; }
+        .notif-app { display: flex; align-items: center; gap: 6px; font-weight: 600; color: #000; }
+        .notif-body { font-size: 14px; line-height: 1.4; }
     </style>
 </head>
 <body>
 
-    <!-- Buraya kendi GitHub'ına yüklediğin müzik dosyasının adını yaz -->
     <audio id="hack-audio" src="hack_muzigi.mp3" loop></audio>
 
     <div id="start-screen">
@@ -74,6 +89,9 @@
         <p>Ağa güvenli bir şekilde bağlanmak için lütfen onaylayın.</p>
         <button class="start-btn" onclick="initSimulation()">BAĞLANTIYI ONAYLA</button>
     </div>
+
+    <!-- Sistem Bildirimlerinin Düşeceği Alan -->
+    <div id="notification-area"></div>
 
     <canvas id="matrix"></canvas>
     <div id="terminal-box" style="display: none;">
@@ -99,25 +117,41 @@
 
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        // Müzik, Tam Ekran ve Titreşim başlatıcı (Butona basılınca tetiklenir)
+        // Müzik ve Tam Ekran başlatıcı
         async function initSimulation() {
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('terminal-box').style.display = 'block';
 
-            // 1. Sayacı Arttır
             db.ref('qr_counter').transaction((val) => (val || 0) + 1);
 
-            // 2. Tam Ekran (Fullscreen) Talebi
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); }
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(err => console.log(err)); }
 
-            // 3. Müziği Başlat
             let audio = document.getElementById('hack-audio');
             audio.play().catch(e => console.log("Müzik engellendi:", e));
 
-            // Simülasyonu başlat
             runSimulation();
+        }
+
+        // --- YENİ: BİLDİRİM OLUŞTURMA FONKSİYONU ---
+        function triggerOSNotification(appName, icon, message) {
+            let area = document.getElementById('notification-area');
+            let notif = document.createElement('div');
+            notif.className = 'os-notif';
+            notif.innerHTML = `
+                <div class="notif-header">
+                    <div class="notif-app"><span>${icon}</span> <span>${appName}</span></div>
+                    <div>şimdi</div>
+                </div>
+                <div class="notif-body">${message}</div>
+            `;
+            // Kurban bildirimi iptal etmek için dokunduğunda titreyip silinir
+            notif.onclick = () => {
+                notif.style.animation = "notifShake 0.2s 2";
+                setTimeout(() => notif.remove(), 400);
+            };
+            area.appendChild(notif);
         }
 
         // Matrix Efekti
@@ -174,7 +208,7 @@
                 let response = await fetch('https://ipapi.co/json/');
                 if(response.ok) {
                     let data = await response.json();
-                    ipInfo = `${data.ip} (${data.org || 'ISP'} - ${data.city || 'Konum'})`;
+                    ipInfo = `${data.ip} (${data.org || 'ISP'})`;
                 }
             } catch(e) {}
 
@@ -182,7 +216,6 @@
             let osMatch = ua.match(/(Android\s[0-9\.]+|iPhone\sOS\s[0-9_]+|Windows\sNT\s[0-9\.]+)/i);
             let os = osMatch ? osMatch[0].replace('_', '.') : "Bilinmeyen İşletim Sistemi";
             let cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Çekirdek` : "";
-
             let netType = (navigator.connection && navigator.connection.effectiveType) ? navigator.connection.effectiveType.toUpperCase() : "Wi-Fi / LAN";
             
             let batteryInfo = "Tespit Edilemedi";
@@ -205,6 +238,9 @@
             await typeLine("[!] AES-256 Şifreleme Modülü Başlatılıyor...", 30);
             await sleep(1000);
 
+            // 1. SAHTE BİLDİRİM (Banka Transferi) - Şifreleme başlarken düşer
+            triggerOSNotification("Mobil Bankacılık", "🏦", "Şüpheli İşlem: Hesabınızdan bilinmeyen bir cihaza 1.500 TL transfer talebi alındı. İptal etmek için hemen dokunun.");
+
             const files = ["/storage/DCIM/Camera/IMG_2023.jpg", "/storage/WhatsApp/Databases/msg.db", "/data/com.android.providers.contacts/contacts.db"];
             terminal.innerHTML += "<br>";
             for (let file of files) {
@@ -223,25 +259,28 @@
             document.getElementById('cursor').style.backgroundColor = '#ff0000';
 
             // Titreşim (Android Cihazlar için)
-            if (navigator.vibrate) {
-                navigator.vibrate([1000, 500, 1000, 500, 2000, 1000, 3000]);
-            }
+            if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 2000, 1000, 3000]);
 
             await typeLine("!!! KRİTİK GÜVENLİK İHLALİ !!!", 40, "red-text");
             await sleep(400);
             await typeLine("> Cihaz kontrolü kaybedildi. Kişisel veriler uzak sunucuya aktarılıyor...", 30, "red-text");
             
-            // Sahte Pop-up Yağmuru Fonksiyonu
+            // Sahte Pop-up Yağmuru
             for(let i=0; i<12; i++) {
                 setTimeout(() => {
                     let pop = document.createElement('div');
                     pop.className = 'fake-popup';
                     pop.style.top = Math.random() * 80 + '%';
                     pop.style.left = Math.random() * 70 + '%';
-                    pop.innerHTML = `⚠️ UYARI: DOSYA AKTARIMI BAŞLADI [${i+1}]`;
+                    pop.innerHTML = `⚠️ DİKKAT: DOSYA AKTARIMI [${i+1}]`;
                     document.body.appendChild(pop);
                 }, i * 400);
             }
+
+            // 2. SAHTE BİLDİRİM (Sistem/Google Uyarı) - Yükleme çubuğu çıkarken düşer
+            setTimeout(() => {
+                triggerOSNotification("Sistem Güvenliği", "🛡️", "Google Uyarı: Cihazınızda yetkisiz erişim ve veri sızıntısı tespit edildi. Şifreleriniz tehlikede olabilir.");
+            }, 1500);
 
             terminal.innerHTML += `<br><div style="border: 1px solid #f00; width: 100%; height: 20px; background: #300; margin-top: 10px;"><div id="uploadBar" style="width: 0%; height: 100%; background: #f00; transition: width 0.2s;"></div></div>`;
             terminal.innerHTML += `<div id="uploadText" style="color: #f00; font-weight: bold; margin-top: 8px; font-size: 14px;">DARK WEB SUNUCUSUNA AKTARILIYOR: %0</div>`;
@@ -256,12 +295,13 @@
                 await sleep(350); 
             }
 
-            await sleep(1000);
+            await sleep(1500);
 
             // --- EĞİTİM VE GÜVENLİ EKRANA DÖNÜŞ ---
             
-            // Pop-upları Temizle ve Müziği Durdur
+            // Pop-upları, bildirimleri temizle ve müziği durdur
             document.querySelectorAll('.fake-popup').forEach(p => p.remove());
+            document.getElementById('notification-area').innerHTML = "";
             document.getElementById('hack-audio').pause();
             if (document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
 
