@@ -2,19 +2,37 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Mobil cihazlarda kusursuz görünmesi için Responsive Meta Tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Sistem Güncellemesi</title>
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
         canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.3; }
         
+        /* Başlangıç Ekranı (İzin Koparmak İçin) */
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: #0f0; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        .start-btn {
+            background: transparent; color: #0f0; border: 2px solid #0f0; padding: 15px 30px;
+            font-size: 20px; font-family: inherit; font-weight: bold; cursor: pointer;
+            border-radius: 5px; margin-top: 20px; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+            transition: all 0.3s; animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse { 0% { box-shadow: 0 0 10px #0f0; } 50% { box-shadow: 0 0 30px #0f0; } 100% { box-shadow: 0 0 10px #0f0; } }
+
+        /* Ana Terminal Kutusu (Responsive) */
         #terminal-box {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90%; max-width: 600px; height: 80%; background: rgba(0, 0, 0, 0.85);
-            border: 2px solid #0f0; border-radius: 8px; z-index: 2; padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4); overflow-y: auto; color: #0f0;
-            transition: all 0.3s ease;
+            width: 95%; max-width: 600px; height: 85vh; background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #0f0; border-radius: 8px; z-index: 2; padding: 15px;
+            box-sizing: border-box; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4); 
+            overflow-y: auto; color: #0f0; transition: all 0.3s ease; font-size: 14px;
         }
+
+        @media (max-width: 600px) { #terminal-box { font-size: 12px; height: 90vh; } }
 
         #terminal-box::-webkit-scrollbar { width: 5px; }
         #terminal-box::-webkit-scrollbar-thumb { background: #0f0; }
@@ -24,30 +42,41 @@
         .safe-mode { border-color: #00ffcc !important; color: #00ffcc !important; box-shadow: 0 0 40px rgba(0, 255, 204, 0.5) !important; }
 
         .red-text { color: #f00; font-weight: bold; }
-        .cursor { display: inline-block; width: 8px; height: 15px; background-color: #0f0; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 5px; }
+        .cursor { display: inline-block; width: 8px; height: 14px; background-color: #0f0; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 5px; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
         /* Glitch Sarsıntı Efekti */
         @keyframes shake {
-            0% { transform: translate(-50%, -50%) translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-50%, -50%) translate(-1px, -2px) rotate(-1deg); }
+            0%, 100% { transform: translate(-50%, -50%) translate(1px, -2px) rotate(-1deg); }
             20% { transform: translate(-50%, -50%) translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(-50%, -50%) translate(3px, 2px) rotate(0deg); }
             40% { transform: translate(-50%, -50%) translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-50%, -50%) translate(-1px, 2px) rotate(-1deg); }
             60% { transform: translate(-50%, -50%) translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(-50%, -50%) translate(3px, 1px) rotate(-1deg); }
             80% { transform: translate(-50%, -50%) translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(-50%, -50%) translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) translate(1px, -2px) rotate(-1deg); }
         }
-        .glitch-active { animation: shake 0.4s infinite; box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
+        .glitch-active { animation: shake 0.3s infinite; box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
+
+        /* Sahte Pop-up Stili */
+        .fake-popup {
+            position: absolute; background: #200; border: 2px solid #f00; color: #f00;
+            padding: 10px 15px; font-size: 12px; font-weight: bold; z-index: 999;
+            box-shadow: 0 0 15px rgba(255,0,0,0.8); animation: popupAnim 0.2s ease-out forwards;
+        }
+        @keyframes popupAnim { from { transform: scale(0); } to { transform: scale(1); } }
     </style>
 </head>
 <body>
 
+    <!-- Buraya kendi GitHub'ına yüklediğin müzik dosyasının adını yaz -->
+    <audio id="hack-audio" src="hack_muzigi.mp3" loop></audio>
+
+    <div id="start-screen">
+        <h2>SİSTEM BAĞLANTISI GEREKLİ</h2>
+        <p>Ağa güvenli bir şekilde bağlanmak için lütfen onaylayın.</p>
+        <button class="start-btn" onclick="initSimulation()">BAĞLANTIYI ONAYLA</button>
+    </div>
+
     <canvas id="matrix"></canvas>
-    <div id="terminal-box">
+    <div id="terminal-box" style="display: none;">
         <div id="terminal"></div><span class="cursor" id="cursor"></span>
     </div>
 
@@ -68,12 +97,30 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // Sayacı 1 Arttır
-        db.ref('qr_counter').transaction((current_value) => {
-            return (current_value || 0) + 1;
-        });
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        // Matrix Yağmuru
+        // Müzik, Tam Ekran ve Titreşim başlatıcı (Butona basılınca tetiklenir)
+        async function initSimulation() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('terminal-box').style.display = 'block';
+
+            // 1. Sayacı Arttır
+            db.ref('qr_counter').transaction((val) => (val || 0) + 1);
+
+            // 2. Tam Ekran (Fullscreen) Talebi
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(err => console.log(err)); }
+
+            // 3. Müziği Başlat
+            let audio = document.getElementById('hack-audio');
+            audio.play().catch(e => console.log("Müzik engellendi:", e));
+
+            // Simülasyonu başlat
+            runSimulation();
+        }
+
+        // Matrix Efekti
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -100,9 +147,6 @@
 
         const terminal = document.getElementById('terminal');
         const terminalBox = document.getElementById('terminal-box');
-        const cursor = document.getElementById('cursor');
-
-        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         async function typeLine(text, speed = 30, cssClass = "", isInstant = false) {
             let el = document.createElement('div');
@@ -124,25 +168,36 @@
             await typeLine("root@system:~# ./payload_exec.sh --bypass-security", 40);
             await sleep(500);
             
-            // --- 1. SESSİZ İSTİHBARAT (IP & Cihaz Analizi) ---
+            // --- DETAYLI CİHAZ İSTİHBARATI ---
             let ipInfo = "Bağlantı Çözümleniyor...";
             try {
                 let response = await fetch('https://ipapi.co/json/');
                 if(response.ok) {
                     let data = await response.json();
-                    ipInfo = `${data.ip} (${data.org || 'Bilinmeyen ISP'} - ${data.city || 'Bilinmeyen Bölge'})`;
+                    ipInfo = `${data.ip} (${data.org || 'ISP'} - ${data.city || 'Konum'})`;
                 }
             } catch(e) {}
 
             let ua = navigator.userAgent;
-            let os = "Bilinmeyen Sistem";
-            if (/android/i.test(ua)) os = "Android OS";
-            if (/iPad|iPhone|iPod/.test(ua)) os = "Apple iOS";
-            let cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Çekirdekli İşlemci` : "Bilinmeyen Donanım";
+            let osMatch = ua.match(/(Android\s[0-9\.]+|iPhone\sOS\s[0-9_]+|Windows\sNT\s[0-9\.]+)/i);
+            let os = osMatch ? osMatch[0].replace('_', '.') : "Bilinmeyen İşletim Sistemi";
+            let cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Çekirdek` : "";
 
-            await typeLine(`[+] Cihaz Tespiti: ${os} | ${cores}`, 20, "red-text");
-            await sleep(400);
-            await typeLine(`[+] Ağ Geçidi: ${ipInfo}`, 20, "red-text");
+            let netType = (navigator.connection && navigator.connection.effectiveType) ? navigator.connection.effectiveType.toUpperCase() : "Wi-Fi / LAN";
+            
+            let batteryInfo = "Tespit Edilemedi";
+            if (navigator.getBattery) {
+                try {
+                    let bat = await navigator.getBattery();
+                    batteryInfo = `%${Math.round(bat.level * 100)} (${bat.charging ? 'Şarjda' : 'Şarjda Değil'})`;
+                } catch(e) {}
+            }
+
+            await typeLine(`[+] Cihaz: ${os} | ${cores}`, 20, "red-text");
+            await sleep(300);
+            await typeLine(`[+] Batarya Durumu: ${batteryInfo}`, 20, "red-text");
+            await sleep(300);
+            await typeLine(`[+] Ağ Bağlantısı: ${netType} | ${ipInfo}`, 20, "red-text");
             await sleep(600);
             
             await typeLine("[*] Güvenlik duvarı aşıldı.", 20, "safe-mode", true);
@@ -150,11 +205,7 @@
             await typeLine("[!] AES-256 Şifreleme Modülü Başlatılıyor...", 30);
             await sleep(1000);
 
-            const files = [
-                "/storage/DCIM/Camera/IMG_2023.jpg",
-                "/storage/WhatsApp/Databases/msg.db",
-                "/data/com.android.providers.contacts/contacts.db"
-            ];
+            const files = ["/storage/DCIM/Camera/IMG_2023.jpg", "/storage/WhatsApp/Databases/msg.db", "/data/com.android.providers.contacts/contacts.db"];
             terminal.innerHTML += "<br>";
             for (let file of files) {
                 await typeLine(`Şifreleniyor: ${file}`, 15);
@@ -163,43 +214,63 @@
                 await sleep(400);
             }
 
-            // --- 2. GÖRSEL PANİK (Titreme & Dark Web Upload) ---
+            // --- KIRMIZI ALARM, TİTREŞİM VE POP-UP YAĞMURU ---
             await sleep(800);
             terminal.innerHTML = "";
             terminalBox.classList.add("red-alert");
             terminalBox.classList.add("glitch-active");
             matrixColor = '#ff0000';
-            cursor.style.backgroundColor = '#ff0000';
+            document.getElementById('cursor').style.backgroundColor = '#ff0000';
+
+            // Titreşim (Android Cihazlar için)
+            if (navigator.vibrate) {
+                navigator.vibrate([1000, 500, 1000, 500, 2000, 1000, 3000]);
+            }
 
             await typeLine("!!! KRİTİK GÜVENLİK İHLALİ !!!", 40, "red-text");
             await sleep(400);
-            await typeLine("> Cihaz kontrolü kaybedildi. Kişisel veriler uzak sunucuya paketleniyor...", 30, "red-text");
+            await typeLine("> Cihaz kontrolü kaybedildi. Kişisel veriler uzak sunucuya aktarılıyor...", 30, "red-text");
             
-            terminal.innerHTML += `<br><div style="border: 1px solid #f00; width: 100%; height: 22px; background: #300; margin-top: 10px;"><div id="uploadBar" style="width: 0%; height: 100%; background: #f00; transition: width 0.2s;"></div></div>`;
+            // Sahte Pop-up Yağmuru Fonksiyonu
+            for(let i=0; i<12; i++) {
+                setTimeout(() => {
+                    let pop = document.createElement('div');
+                    pop.className = 'fake-popup';
+                    pop.style.top = Math.random() * 80 + '%';
+                    pop.style.left = Math.random() * 70 + '%';
+                    pop.innerHTML = `⚠️ UYARI: DOSYA AKTARIMI BAŞLADI [${i+1}]`;
+                    document.body.appendChild(pop);
+                }, i * 400);
+            }
+
+            terminal.innerHTML += `<br><div style="border: 1px solid #f00; width: 100%; height: 20px; background: #300; margin-top: 10px;"><div id="uploadBar" style="width: 0%; height: 100%; background: #f00; transition: width 0.2s;"></div></div>`;
             terminal.innerHTML += `<div id="uploadText" style="color: #f00; font-weight: bold; margin-top: 8px; font-size: 14px;">DARK WEB SUNUCUSUNA AKTARILIYOR: %0</div>`;
             
             let uploadProgress = 0;
             while(uploadProgress < 100) {
                 uploadProgress += Math.floor(Math.random() * 10) + 2; 
                 if(uploadProgress > 100) uploadProgress = 100;
-                
                 document.getElementById('uploadBar').style.width = uploadProgress + '%';
                 document.getElementById('uploadText').innerText = `KİŞİSEL VERİLER AKTARILIYOR: %${uploadProgress}`;
                 terminalBox.scrollTop = terminalBox.scrollHeight;
                 await sleep(350); 
             }
 
-            await sleep(500);
-            await typeLine("[!] AKTARIM TAMAMLANDI. Cihaz tamamen kilitleniyor...", 20, "red-text");
-            await sleep(2500); 
+            await sleep(1000);
 
-            // --- 3. EĞİTİM VE GÜVENLİ EKRANA DÖNÜŞ ---
+            // --- EĞİTİM VE GÜVENLİ EKRANA DÖNÜŞ ---
+            
+            // Pop-upları Temizle ve Müziği Durdur
+            document.querySelectorAll('.fake-popup').forEach(p => p.remove());
+            document.getElementById('hack-audio').pause();
+            if (document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
+
             terminalBox.classList.remove("glitch-active");
             terminal.innerHTML = "";
             terminalBox.classList.remove("red-alert");
             terminalBox.classList.add("safe-mode");
             matrixColor = '#005511';
-            cursor.style.backgroundColor = '#00ffcc';
+            document.getElementById('cursor').style.backgroundColor = '#00ffcc';
 
             await typeLine("==========================================", 10, "safe-mode");
             await typeLine("   SİMÜLASYON TAMAMLANDI - GÜVENDESİNİZ   ", 30, "safe-mode");
@@ -211,8 +282,6 @@
             await sleep(800);
             await typeLine("📸 Ekran görüntüsü alıp İstanbul Medipol Üniversitesi ISTRL sergi standımıza gelerek bilgi alabilirsiniz!", 30, "safe-mode");
         }
-
-        window.onload = runSimulation;
     </script>
 </body>
 </html>
