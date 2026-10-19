@@ -2,11 +2,10 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <!-- Mobil ekranlarda tam ve kusursuz oturması için -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Medipol Ağı - Güvenli Bağlantı</title>
+    <title>Medipol Free Wi-Fi - Secure Connection</title>
     
-    <!-- Tailwind CSS (Premium ve Güven Verici Görünüm İçin) -->
+    <!-- Tailwind CSS (Premium Görünüm İçin) -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -45,7 +44,7 @@
         }
         .glitch-active { animation: shake 0.3s infinite; box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
 
-        /* Sahte Pop-up Stili (Erişim Engellendi) */
+        /* Sahte Pop-up Stili */
         .fake-popup {
             position: absolute; background: #200; border: 2px solid #f00; color: #f00;
             padding: 10px 15px; font-size: 12px; font-weight: bold; z-index: 9999;
@@ -73,44 +72,56 @@
 </head>
 <body>
 
-    <!-- MÜZİK DOSYASI (GitHub'daki isimle birebir aynı) -->
+    <!-- MÜZİK DOSYASI -->
     <audio id="hack-audio" src="hack_music.mp3" loop></audio>
 
-    <!-- TRUVA ATI: PREMIUM BAŞLANGIÇ EKRANI (Tailwind CSS) -->
-    <div id="start-screen" class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 absolute inset-0 z-[9999]">
-        <div class="sm:mx-auto sm:w-full sm:max-w-md">
-            <!-- Kurumsal İkon/Logo Alanı -->
-            <div class="flex justify-center">
-                <div class="h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
-                    <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                </div>
-            </div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-slate-900">
-                ISTRL Siber Güvenlik Sergisi
-            </h2>
-            <p class="mt-2 text-center text-sm text-slate-600">
-                Güvenli ağ bağlantısı ve etkinlik kaydı.
-            </p>
+    <!-- TRUVA ATI: YENİ PREMIUM DARK TASARIM (Görselden Esinlenildi) -->
+    <div id="start-screen" class="min-h-screen bg-[#0a0a0a] flex flex-col justify-between p-6 sm:p-12 absolute inset-0 z-[9999] font-sans overflow-hidden">
+        
+        <!-- Arka Plan Işık Efekti (Görseldeki parlamayı simüle eder) -->
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#81e897] opacity-[0.05] rounded-full blur-[100px] pointer-events-none"></div>
+
+        <!-- Üst Bar ve İkonlar -->
+        <div class="flex justify-end items-center space-x-3 opacity-80 relative z-10">
+            <div class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">M</div>
+            <div class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">W</div>
+            <div class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">I</div>
+            <div class="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">S</div>
         </div>
 
-        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
-            <div class="bg-white py-8 px-4 shadow-xl sm:rounded-xl sm:px-10 border border-slate-100 text-center">
-                <p class="text-slate-700 mb-6 text-sm">
-                    Sergi alanındaki interaktif simülasyonlara katılmak ve hızlı Wi-Fi ağına erişmek için lütfen cihazınızı doğrulayın.
-                </p>
-                
-                <!-- ZEHİRLİ BUTON (Cehennemi Başlatan Tuş) -->
-                <button onclick="initSimulation()" class="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-lg shadow-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out transform hover:-translate-y-0.5">
-                    Kayıt İçin Tıklayınız
-                </button>
-                
-                <div class="mt-6 border-t border-slate-100 pt-4">
-                    <p class="text-xs text-slate-400">
-                        Devam ederek İstanbul Medipol Üniversitesi ağ kullanım koşullarını ve KVKK aydınlatma metnini kabul etmiş olursunuz.
-                    </p>
-                </div>
+        <!-- Ana Tipografi Alanı -->
+        <div class="flex-grow flex flex-col justify-center relative z-10">
+            <h1 class="text-5xl sm:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6">
+                <span class="block text-[#81e897]">Medipol</span>
+                <span class="block text-white">Free Wi-Fi</span>
+                <span class="block text-[#81e897]">Network</span>
+                <span class="block text-white">Access</span>
+            </h1>
+            
+            <p class="text-lg text-gray-400 max-w-md mb-10 font-medium">
+                Sergi alanında ücretsiz ve sınırsız internete erişim sağlayın. ISTRL güvencesiyle yüksek hızlı bağlantının keyfini çıkarın.
+            </p>
+            
+            <!-- ZEHİRLİ BUTON (Premium Stil) -->
+            <button onclick="initSimulation()" class="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-black bg-[#81e897] rounded-full hover:bg-white transition-all duration-300 w-fit overflow-hidden shadow-[0_0_20px_rgba(129,232,151,0.4)] hover:shadow-[0_0_30px_rgba(255,255,255,0.6)]">
+                <span class="relative text-lg">Ağa Bağlan</span>
+                <svg class="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </button>
+        </div>
+
+        <!-- Alt Kısım Özellikler (Görseldeki alt menüye benzer) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 border-t border-gray-800 pt-6 mt-8 relative z-10">
+            <div class="text-left sm:text-center">
+                <h3 class="text-white font-bold text-sm sm:text-base">Sınırsız Erişim</h3>
+            </div>
+            <div class="text-left sm:text-center sm:border-l border-gray-800">
+                <h3 class="text-white font-bold text-sm sm:text-base">Yüksek Hız</h3>
+            </div>
+            <div class="text-left sm:text-center sm:border-l border-gray-800">
+                <h3 class="text-white font-bold text-sm sm:text-base">Modern Altyapı</h3>
+            </div>
+            <div class="text-left sm:text-center sm:border-l border-gray-800">
+                <h3 class="text-white font-bold text-sm sm:text-base">ISTRL Onaylı</h3>
             </div>
         </div>
     </div>
@@ -128,7 +139,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
-        // Senin Firebase Yapılandırman
         const firebaseConfig = {
             apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
             authDomain: "deneme-4f8f3.firebaseapp.com",
@@ -143,28 +153,24 @@
 
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-        // Butona Basıldığında Tetiklenen İlk Animasyon (Müzik, Tam Ekran, Terminal)
+        // Müzik, Tam Ekran ve Terminal Başlatıcı
         async function initSimulation() {
-            // 1. Başlangıç ekranını gizle, terminali göster
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('terminal-box').style.display = 'block';
 
-            // 2. Firebase Ziyaretçi Sayacını Arttır
             db.ref('qr_counter').transaction((val) => (val || 0) + 1);
 
-            // 3. Tam Ekran (Fullscreen) Talebi
             let elem = document.documentElement;
             if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); }
             else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(err => console.log(err)); }
 
-            // 4. Hack Müziğini Başlat
             let audio = document.getElementById('hack-audio');
             audio.play().catch(e => console.log("Müzik engellendi:", e));
 
             runSimulation();
         }
 
-        // Sahte İşletim Sistemi Bildirimi Oluşturma Fonksiyonu
+        // Bildirim Oluşturma Fonksiyonu
         function triggerOSNotification(appName, icon, message) {
             let area = document.getElementById('notification-area');
             let notif = document.createElement('div');
@@ -176,7 +182,6 @@
                 </div>
                 <div class="notif-body">${message}</div>
             `;
-            // Kurban bildirime dokunduğunda titreyip kaybolur
             notif.onclick = () => {
                 notif.style.animation = "notifShake 0.2s 2";
                 setTimeout(() => notif.remove(), 400);
@@ -184,7 +189,7 @@
             area.appendChild(notif);
         }
 
-        // Arka Plan Matrix Efekti
+        // Matrix Efekti
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
@@ -209,7 +214,6 @@
         }
         setInterval(drawMatrix, 33);
 
-        // Terminal Yazı Yazdırma Fonksiyonu
         const terminal = document.getElementById('terminal');
         const terminalBox = document.getElementById('terminal-box');
 
@@ -228,13 +232,12 @@
             }
         }
 
-        // Ana Simülasyon Kurgusu
         async function runSimulation() {
             await sleep(800);
             await typeLine("root@system:~# ./payload_exec.sh --bypass-security", 40);
             await sleep(500);
             
-            // --- AŞAMA 1: DETAYLI CİHAZ İSTİHBARATI ---
+            // --- DETAYLI CİHAZ İSTİHBARATI ---
             let ipInfo = "Bağlantı Çözümleniyor...";
             try {
                 let response = await fetch('https://ipapi.co/json/');
@@ -270,7 +273,7 @@
             await typeLine("[!] AES-256 Şifreleme Modülü Başlatılıyor...", 30);
             await sleep(1000);
 
-            // BİLDİRİM 1: Banka Transferi (Şifreleme başlarken düşer)
+            // 1. SAHTE BİLDİRİM (Banka Transferi)
             triggerOSNotification("Mobil Bankacılık", "🏦", "Şüpheli İşlem: Hesabınızdan bilinmeyen bir cihaza 25.000 TL transfer talebi alındı. İptal etmek için hemen dokunun.");
 
             const files = ["/storage/DCIM/Camera/IMG_2023.jpg", "/storage/WhatsApp/Databases/msg.db", "/data/com.android.providers.contacts/contacts.db"];
@@ -282,7 +285,7 @@
                 await sleep(400);
             }
 
-            // --- AŞAMA 2: KIRMIZI ALARM, TİTREŞİM VE POP-UP YAĞMURU ---
+            // --- KIRMIZI ALARM, TİTREŞİM VE POP-UP YAĞMURU ---
             await sleep(800);
             terminal.innerHTML = "";
             terminalBox.classList.add("red-alert");
@@ -290,7 +293,6 @@
             matrixColor = '#ff0000';
             document.getElementById('cursor').style.backgroundColor = '#ff0000';
 
-            // Titreşim (Sadece destekleyen cihazlarda)
             if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 2000, 1000, 3000]);
 
             await typeLine("!!! KRİTİK GÜVENLİK İHLALİ !!!", 40, "red-text");
@@ -309,12 +311,11 @@
                 }, i * 400);
             }
 
-            // BİLDİRİM 2: Sistem/Google Uyarı (Yükleme çubuğu çıkarken düşer)
+            // 2. SAHTE BİLDİRİM (Sistem/Google Uyarı)
             setTimeout(() => {
                 triggerOSNotification("Sistem Güvenliği", "🛡️", "Google Uyarı: Cihazınızda yetkisiz erişim ve veri sızıntısı tespit edildi. Şifreleriniz tehlikede olabilir.");
             }, 1500);
 
-            // Dark Web Upload Bar
             terminal.innerHTML += `<br><div style="border: 1px solid #f00; width: 100%; height: 20px; background: #300; margin-top: 10px;"><div id="uploadBar" style="width: 0%; height: 100%; background: #f00; transition: width 0.2s;"></div></div>`;
             terminal.innerHTML += `<div id="uploadText" style="color: #f00; font-weight: bold; margin-top: 8px; font-size: 14px;">DARK WEB SUNUCUSUNA AKTARILIYOR: %0</div>`;
             
@@ -330,15 +331,13 @@
 
             await sleep(1500);
 
-            // --- AŞAMA 3: EĞİTİM VE GÜVENLİ EKRANA DÖNÜŞ ---
+            // --- EĞİTİM VE GÜVENLİ EKRANA DÖNÜŞ ---
             
-            // Ortam Temizliği
             document.querySelectorAll('.fake-popup').forEach(p => p.remove());
             document.getElementById('notification-area').innerHTML = "";
             document.getElementById('hack-audio').pause();
             if (document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
 
-            // UI Düzenlemesi (Yeşil Mod)
             terminalBox.classList.remove("glitch-active");
             terminal.innerHTML = "";
             terminalBox.classList.remove("red-alert");
@@ -346,7 +345,6 @@
             matrixColor = '#005511';
             document.getElementById('cursor').style.backgroundColor = '#00ffcc';
 
-            // Kalıcı Mesaj ve Çözüm
             await typeLine("==========================================", 10, "safe-mode");
             await typeLine("   SİMÜLASYON TAMAMLANDI - GÜVENDESİNİZ   ", 30, "safe-mode");
             await typeLine("==========================================", 10, "safe-mode");
