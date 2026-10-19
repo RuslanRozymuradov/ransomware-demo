@@ -78,7 +78,7 @@
     <!-- YENİ GÜVENLİ & PREMIUM TASARIM (Dark Mode & Glassmorphism) -->
     <div id="start-screen" class="min-h-screen bg-[#09090b] flex items-center justify-center p-6 relative overflow-hidden font-sans z-[9999]">
         
-        <!-- Arka Plan Neon Işıkları (Görseldeki mor/mavi parlama efekti) -->
+        <!-- Arka Plan Neon Işıkları -->
         <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
         <div class="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -95,7 +95,7 @@
             <!-- Kısa, Net ve Dürüst Metinler -->
             <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">FREE WIFI</h2>
             <p class="text-gray-400 text-sm mb-8">
-               Sergi alanında ücretsiz ve sınırsız internete erişim sağlayın.
+                Sergi alanında ücretsiz ve sınırsız internete erişim sağlayın.
             </p>
 
             <!-- Modern Buton -->
@@ -121,6 +121,23 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <script>
+        // =========================================================================
+        // GERİ TUŞU KİLİT SİSTEMİ (EKLENEN KISIM)
+        // =========================================================================
+        let isSimulationRunning = false; 
+        
+        // Sayfa yüklendiğinde ilk tuzağı kuruyoruz
+        history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+
+        window.addEventListener('popstate', function(event) {
+            // Eğer simülasyon çalışıyorsa kullanıcıyı geri sayfaya salma, tekrar hapset
+            if (isSimulationRunning) {
+                history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+            }
+        });
+        // =========================================================================
+
+
         const firebaseConfig = {
             apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
             authDomain: "deneme-4f8f3.firebaseapp.com",
@@ -136,6 +153,9 @@
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         async function initSimulation() {
+            // BUTONA BASILDIĞI AN GERİ TUŞUNU KİLİTLE (EKLENEN KISIM)
+            isSimulationRunning = true; 
+
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('terminal-box').style.display = 'block';
 
@@ -326,6 +346,11 @@
             terminal.innerHTML += "<br>";
             await sleep(800);
             await typeLine("📸 Ekran görüntüsü alıp İstanbul Medipol Üniversitesi ISTRL sergi standımıza gelerek bilgi alabilirsiniz!", 30, "safe-mode");
+            
+            // =========================================================================
+            // SİMÜLASYON BİTTİ - GERİ TUŞU KİLİDİNİ AÇIYORUZ (EKLENEN KISIM)
+            // =========================================================================
+            isSimulationRunning = false; 
         }
     </script>
 </body>
