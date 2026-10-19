@@ -122,21 +122,31 @@
 
     <script>
         // =========================================================================
-        // GERİ TUŞU KİLİT SİSTEMİ (EKLENEN KISIM)
+        // GELİŞMİŞ GERİ TUŞU KİLİT SİSTEMİ (MOBİL UYUMLU)
         // =========================================================================
-        let isSimulationRunning = false; 
-        
-        // Sayfa yüklendiğinde ilk tuzağı kuruyoruz
-        history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+        let isSimulationRunning = false;
+
+        function lockBackButton() {
+            // Kullanıcı etkileşimi sırasında birden fazla tampon geçmiş durumu ekliyoruz
+            for (let i = 0; i < 5; i++) {
+                history.pushState({ step: i }, '', window.location.href);
+            }
+        }
 
         window.addEventListener('popstate', function(event) {
-            // Eğer simülasyon çalışıyorsa kullanıcıyı geri sayfaya salma, tekrar hapset
             if (isSimulationRunning) {
-                history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+                // Geri tuşuna basıldıkça yeni tampon eklemeye devam et
+                history.pushState({ step: 'locked' }, '', window.location.href);
+            }
+        });
+
+        // Telefonda ilk geri tuşu tam ekrandan çıkarırsa anında geçmişi tazele
+        document.addEventListener('fullscreenchange', function() {
+            if (!document.fullscreenElement && isSimulationRunning) {
+                history.pushState({ step: 'fullscreen-exit-lock' }, '', window.location.href);
             }
         });
         // =========================================================================
-
 
         const firebaseConfig = {
             apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
@@ -153,8 +163,9 @@
         function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
         async function initSimulation() {
-            // BUTONA BASILDIĞI AN GERİ TUŞUNU KİLİTLE (EKLENEN KISIM)
-            isSimulationRunning = true; 
+            // Kullanıcının butona dokunduğu an (User Gesture) kilidi aktif et
+            isSimulationRunning = true;
+            lockBackButton();
 
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('terminal-box').style.display = 'block';
@@ -347,9 +358,7 @@
             await sleep(800);
             await typeLine("📸 Ekran görüntüsü alıp İstanbul Medipol Üniversitesi ISTRL sergi standımıza gelerek bilgi alabilirsiniz!", 30, "safe-mode");
             
-            // =========================================================================
-            // SİMÜLASYON BİTTİ - GERİ TUŞU KİLİDİNİ AÇIYORUZ (EKLENEN KISIM)
-            // =========================================================================
+            // Simülasyon tamamlandığında geri tuşu kilidini aç
             isSimulationRunning = false; 
         }
     </script>
