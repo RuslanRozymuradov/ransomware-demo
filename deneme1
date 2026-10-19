@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ISTRL - Siber Güvenlik Simülasyonu</title>
+    
+    <!-- Tailwind CSS (Premium Dark/Glassmorphism Görünüm İçin) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+        canvas { display: block; position: absolute; top: 0; left: 0; z-index: 1; opacity: 0.3; }
+        
+        /* Ana Terminal Kutusu */
+        #terminal-box {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 95%; max-width: 600px; height: 85vh; background: rgba(0, 0, 0, 0.85);
+            border: 2px solid #0f0; border-radius: 8px; z-index: 2; padding: 15px;
+            box-sizing: border-box; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4); 
+            overflow-y: auto; color: #0f0; transition: all 0.3s ease; font-size: 14px;
+        }
+
+        @media (max-width: 600px) { #terminal-box { font-size: 12px; height: 90vh; } }
+
+        #terminal-box::-webkit-scrollbar { width: 5px; }
+        #terminal-box::-webkit-scrollbar-thumb { background: #0f0; }
+
+        .red-alert { border-color: #f00 !important; color: #f00 !important; box-shadow: 0 0 40px rgba(255, 0, 0, 0.6) !important; }
+        .red-alert::-webkit-scrollbar-thumb { background: #f00 !important; }
+        .safe-mode { border-color: #00ffcc !important; color: #00ffcc !important; box-shadow: 0 0 40px rgba(0, 255, 204, 0.5) !important; }
+
+        .red-text { color: #f00; font-weight: bold; }
+        .cursor { display: inline-block; width: 8px; height: 14px; background-color: #0f0; animation: blink 1s step-end infinite; vertical-align: middle; margin-left: 5px; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Glitch Sarsıntı Efekti */
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%) translate(1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-50%, -50%) translate(-3px, 0px) rotate(1deg); }
+            40% { transform: translate(-50%, -50%) translate(1px, -1px) rotate(1deg); }
+            60% { transform: translate(-50%, -50%) translate(-3px, 1px) rotate(0deg); }
+            80% { transform: translate(-50%, -50%) translate(-1px, -1px) rotate(1deg); }
+        }
+        .glitch-active { animation: shake 0.3s infinite; box-shadow: 0 0 60px rgba(255, 0, 0, 0.9) !important; }
+
+        /* Sahte Pop-up Stili */
+        .fake-popup {
+            position: absolute; background: #200; border: 2px solid #f00; color: #f00;
+            padding: 10px 15px; font-size: 12px; font-weight: bold; z-index: 9999;
+            box-shadow: 0 0 15px rgba(255,0,0,0.8); animation: popupAnim 0.2s ease-out forwards;
+        }
+        @keyframes popupAnim { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* Sahte İşletim Sistemi Bildirimleri (iOS/Android Style) */
+        #notification-area {
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 92%; max-width: 400px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;
+        }
+        .os-notif {
+            background: rgba(245, 245, 245, 0.95); border-radius: 16px; padding: 12px 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #111; animation: dropDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); cursor: pointer;
+        }
+        @keyframes dropDown { from { transform: translateY(-80px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes notifShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .notif-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #555; margin-bottom: 6px; }
+        .notif-app { display: flex; align-items: center; gap: 6px; font-weight: 600; color: #000; }
+        .notif-body { font-size: 14px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+    <!-- MÜZİK DOSYASI -->
+    <audio id="hack-audio" src="hack_music.mp3" loop></audio>
+
+    <!-- YENİ GÜVENLİ & PREMIUM TASARIM (Dark Mode & Glassmorphism) -->
+    <div id="start-screen" class="min-h-screen bg-[#09090b] flex items-center justify-center p-6 relative overflow-hidden font-sans z-[9999]">
+        
+        <!-- Arka Plan Neon Işıkları -->
+        <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+        <!-- Glassmorphism (Buzlu Cam) Kartı -->
+        <div class="relative w-full max-w-sm bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl text-center">
+            
+            <!-- Güvenlik / Kalkan İkonu -->
+            <div class="mx-auto w-16 h-16 bg-purple-500/20 rounded-2xl flex items-center justify-center border border-purple-500/30 mb-6 shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+
+            <!-- Kısa, Net ve Dürüst Metinler -->
+            <h2 class="text-2xl font-bold text-white mb-2 tracking-tight">FREE WIFI</h2>
+            <p class="text-gray-400 text-sm mb-8">
+                Sergi alanında ücretsiz ve sınırsız internete erişim sağlayın.
+            </p>
+
+            <!-- Modern Buton -->
+            <button onclick="initSimulation()" class="w-full relative group overflow-hidden rounded-xl bg-purple-600 hover:bg-purple-500 transition-all duration-300 px-6 py-4 font-semibold text-white shadow-[0_0_20px_rgba(147,51,234,0.4)] hover:shadow-[0_0_30px_rgba(147,51,234,0.6)]">
+                <span class="relative z-10 flex items-center justify-center gap-2 text-sm uppercase tracking-wider">
+                    Ağa Bağlan
+                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Sistem Bildirimlerinin Düşeceği Alan -->
+    <div id="notification-area"></div>
+
+    <canvas id="matrix"></canvas>
+    <div id="terminal-box" style="display: none;">
+        <div id="terminal"></div><span class="cursor" id="cursor"></span>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // =========================================================================
+        // GERİ TUŞU KİLİT SİSTEMİ (EKLENEN KISIM)
+        // =========================================================================
+        let isSimulationRunning = false; 
+        
+        // Sayfa yüklendiğinde ilk tuzağı kuruyoruz
+        history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+
+        window.addEventListener('popstate', function(event) {
+            // Eğer simülasyon çalışıyorsa kullanıcıyı geri sayfaya salma, tekrar hapset
+            if (isSimulationRunning) {
+                history.pushState({ sayfa: 'guvenlik-sim' }, '', window.location.href);
+            }
+        });
+        // =========================================================================
+
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAX_8Tu3z-rfkBBtpRzNMdyKwVADXjXras",
+            authDomain: "deneme-4f8f3.firebaseapp.com",
+            databaseURL: "https://deneme-4f8f3-default-rtdb.firebaseio.com",
+            projectId: "deneme-4f8f3",
+            storageBucket: "deneme-4f8f3.firebasestorage.app",
+            messagingSenderId: "891754162517",
+            appId: "1:891754162517:web:1794bcb4ab265dc7c7a7dc"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+        async function initSimulation() {
+            // BUTONA BASILDIĞI AN GERİ TUŞUNU KİLİTLE (EKLENEN KISIM)
+            isSimulationRunning = true; 
+
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('terminal-box').style.display = 'block';
+
+            db.ref('qr_counter').transaction((val) => (val || 0) + 1);
+
+            let elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen().catch(err => console.log(err)); }
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen().catch(err => console.log(err)); }
+
+            let audio = document.getElementById('hack-audio');
+            audio.play().catch(e => console.log("Müzik engellendi:", e));
+
+            runSimulation();
+        }
+
+        function triggerOSNotification(appName, icon, message) {
+            let area = document.getElementById('notification-area');
+            let notif = document.createElement('div');
+            notif.className = 'os-notif';
+            notif.innerHTML = `
+                <div class="notif-header">
+                    <div class="notif-app"><span>${icon}</span> <span>${appName}</span></div>
+                    <div>şimdi</div>
+                </div>
+                <div class="notif-body">${message}</div>
+            `;
+            notif.onclick = () => {
+                notif.style.animation = "notifShake 0.2s 2";
+                setTimeout(() => notif.remove(), 400);
+            };
+            area.appendChild(notif);
+        }
+
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const letters = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        let matrixColor = '#0f0';
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = matrixColor;
+            ctx.font = fontSize + 'px monospace';
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 33);
+
+        const terminal = document.getElementById('terminal');
+        const terminalBox = document.getElementById('terminal-box');
+
+        async function typeLine(text, speed = 30, cssClass = "", isInstant = false) {
+            let el = document.createElement('div');
+            if (cssClass) el.className = cssClass;
+            terminal.appendChild(el);
+            if (isInstant) {
+                el.innerHTML = text;
+            } else {
+                for (let i = 0; i < text.length; i++) {
+                    el.innerHTML += text.charAt(i);
+                    terminalBox.scrollTop = terminalBox.scrollHeight;
+                    await sleep(speed);
+                }
+            }
+        }
+
+        async function runSimulation() {
+            await sleep(800);
+            await typeLine("root@system:~# ./payload_exec.sh --bypass-security", 40);
+            await sleep(500);
+            
+            let ipInfo = "Bağlantı Çözümleniyor...";
+            try {
+                let response = await fetch('https://ipapi.co/json/');
+                if(response.ok) {
+                    let data = await response.json();
+                    ipInfo = `${data.ip} (${data.org || 'ISP'})`;
+                }
+            } catch(e) {}
+
+            let ua = navigator.userAgent;
+            let osMatch = ua.match(/(Android\s[0-9\.]+|iPhone\sOS\s[0-9_]+|Windows\sNT\s[0-9\.]+)/i);
+            let os = osMatch ? osMatch[0].replace('_', '.') : "Bilinmeyen İşletim Sistemi";
+            let cores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Çekirdek` : "";
+            let netType = (navigator.connection && navigator.connection.effectiveType) ? navigator.connection.effectiveType.toUpperCase() : "Wi-Fi / LAN";
+            
+            let batteryInfo = "Tespit Edilemedi";
+            if (navigator.getBattery) {
+                try {
+                    let bat = await navigator.getBattery();
+                    batteryInfo = `%${Math.round(bat.level * 100)} (${bat.charging ? 'Şarjda' : 'Şarjda Değil'})`;
+                } catch(e) {}
+            }
+
+            await typeLine(`[+] Cihaz: ${os} | ${cores}`, 20, "red-text");
+            await sleep(300);
+            await typeLine(`[+] Batarya Durumu: ${batteryInfo}`, 20, "red-text");
+            await sleep(300);
+            await typeLine(`[+] Ağ Bağlantısı: ${netType} | ${ipInfo}`, 20, "red-text");
+            await sleep(600);
+            
+            await typeLine("[*] Güvenlik duvarı aşıldı.", 20, "safe-mode", true);
+            await sleep(600);
+            await typeLine("[!] AES-256 Şifreleme Modülü Başlatılıyor...", 30);
+            await sleep(1000);
+
+            triggerOSNotification("Dijital Finans Güvenliği", "💳", "DİKKAT: Hesabınızdan yurt dışı kaynaklı bir kripto cüzdanına 45.000 TL transfer talebi tespit edildi. İşlemi durdurmak için dokunun.");
+
+            const files = ["/storage/DCIM/Camera/IMG_2023.jpg", "/storage/WhatsApp/Databases/msg.db", "/data/com.android.providers.contacts/contacts.db"];
+            terminal.innerHTML += "<br>";
+            for (let file of files) {
+                await typeLine(`Şifreleniyor: ${file}`, 15);
+                await sleep(300);
+                await typeLine(" -> [KİLİTLENDİ]", 10, "red-text", true);
+                await sleep(400);
+            }
+
+            await sleep(800);
+            terminal.innerHTML = "";
+            terminalBox.classList.add("red-alert");
+            terminalBox.classList.add("glitch-active");
+            matrixColor = '#ff0000';
+            document.getElementById('cursor').style.backgroundColor = '#ff0000';
+
+            if (navigator.vibrate) navigator.vibrate([1000, 500, 1000, 500, 2000, 1000, 3000]);
+
+            await typeLine("!!! KRİTİK GÜVENLİK İHLALİ !!!", 40, "red-text");
+            await sleep(400);
+            await typeLine("> Cihaz kontrolü kaybedildi. Kişisel veriler uzak sunucuya aktarılıyor...", 30, "red-text");
+            
+            for(let i=0; i<12; i++) {
+                setTimeout(() => {
+                    let pop = document.createElement('div');
+                    pop.className = 'fake-popup';
+                    pop.style.top = Math.random() * 80 + '%';
+                    pop.style.left = Math.random() * 70 + '%';
+                    pop.innerHTML = `⚠️ DİKKAT: ERİŞİM ENGELLENDİ [${i+1}]`;
+                    document.body.appendChild(pop);
+                }, i * 400);
+            }
+
+            setTimeout(() => {
+                triggerOSNotification("Sistem Güvenliği", "🛡️", "Google Uyarı: Cihazınızda yetkisiz erişim ve veri sızıntısı tespit edildi. Şifreleriniz tehlikede olabilir.");
+            }, 1500);
+
+            terminal.innerHTML += `<br><div style="border: 1px solid #f00; width: 100%; height: 20px; background: #300; margin-top: 10px;"><div id="uploadBar" style="width: 0%; height: 100%; background: #f00; transition: width 0.2s;"></div></div>`;
+            terminal.innerHTML += `<div id="uploadText" style="color: #f00; font-weight: bold; margin-top: 8px; font-size: 14px;">DARK WEB SUNUCUSUNA AKTARILIYOR: %0</div>`;
+            
+            let uploadProgress = 0;
+            while(uploadProgress < 100) {
+                uploadProgress += Math.floor(Math.random() * 10) + 2; 
+                if(uploadProgress > 100) uploadProgress = 100;
+                document.getElementById('uploadBar').style.width = uploadProgress + '%';
+                document.getElementById('uploadText').innerText = `KİŞİSEL VERİLER AKTARILIYOR: %${uploadProgress}`;
+                terminalBox.scrollTop = terminalBox.scrollHeight;
+                await sleep(350); 
+            }
+
+            await sleep(1500);
+
+            document.querySelectorAll('.fake-popup').forEach(p => p.remove());
+            document.getElementById('notification-area').innerHTML = "";
+            document.getElementById('hack-audio').pause();
+            if (document.exitFullscreen) document.exitFullscreen().catch(e=>console.log(e));
+
+            terminalBox.classList.remove("glitch-active");
+            terminal.innerHTML = "";
+            terminalBox.classList.remove("red-alert");
+            terminalBox.classList.add("safe-mode");
+            matrixColor = '#005511';
+            document.getElementById('cursor').style.backgroundColor = '#00ffcc';
+
+            await typeLine("==========================================", 10, "safe-mode");
+            await typeLine("   SİMÜLASYON TAMAMLANDI - GÜVENDESİNİZ   ", 30, "safe-mode");
+            await typeLine("==========================================", 10, "safe-mode");
+            await sleep(800);
+            await typeLine("> Az önce bir oltalama kurbanı oldunuz.", 30, "safe-mode");
+            await typeLine("> Kaynağını bilmediğiniz bağlantılar verilerinizi çalabilir.", 30, "safe-mode");
+            terminal.innerHTML += "<br>";
+            await sleep(800);
+            await typeLine("📸 Ekran görüntüsü alıp İstanbul Medipol Üniversitesi ISTRL sergi standımıza gelerek bilgi alabilirsiniz!", 30, "safe-mode");
+            
+            // =========================================================================
+            // SİMÜLASYON BİTTİ - GERİ TUŞU KİLİDİNİ AÇIYORUZ (EKLENEN KISIM)
+            // =========================================================================
+            isSimulationRunning = false; 
+        }
+    </script>
+</body>
+</html>
